@@ -9,65 +9,44 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { React, useState } from "react";
 
-const DisplayWidget = ({ widget, onSave, handleRemove }) => {
+const DisplayWidget = ({ widget, onSave, handleRemove, error }) => {
   const { name, description: initialDescription, price: initialPrice } = widget;
   const [description, setDescription] = useState(initialDescription);
   const [price, setPrice] = useState(initialPrice);
   const [editMode, setEditMode] = useState(false);
-  const [descriptionError, setDescriptionError] = useState(false);
-  const [priceError, setPriceError] = useState(false);
-
-  const validateDescription = () => {
-    if (description.length < 5 || description.length > 1000) {
-      setDescriptionError(true);
-      return false;
-    }
-    setDescriptionError(false);
-    return true;
-  };
-
-  const validatePrice = () => {
-    const parsedPrice = parseFloat(price);
-    if (isNaN(parsedPrice) || parsedPrice < 1 || parsedPrice > 20000) {
-      setPriceError(true);
-      return false;
-    }
-
-    const decimalCount = price.split(".")[1]?.length || 0;
-    if (decimalCount > 2) {
-      setPriceError(true);
-      return false;
-    }
-
-    setPriceError(false);
-    return true;
-  };
 
   const toggleEdit = () => {
     setEditMode(!editMode);
   };
 
-  const save = () => {
-    if (!validateDescription() || !validatePrice()) {
-      return;
-    }
+  const save = async () => {
     const updatedWidget = {
       ...widget,
       description,
       price,
     };
-    onSave(updatedWidget);
-    setEditMode(!editMode);
+    const isSaved = await onSave(updatedWidget);
+    if (isSaved === true) {
+      setEditMode(!editMode);
+    }
   };
 
   return (
     <Grid item xs={6}>
       <Card>
         <CardContent>
-          <IconButton onClick={toggleEdit} size="small">
+          <IconButton
+            onClick={toggleEdit}
+            size="small"
+            data-testid="edit-button"
+          >
             <EditIcon />
           </IconButton>
-          <IconButton onClick={() => handleRemove(name)} size="small">
+          <IconButton
+            onClick={() => handleRemove(name)}
+            size="small"
+            data-testid="delete-button"
+          >
             <DeleteIcon />
           </IconButton>
           <Stack spacing={2}>
@@ -82,13 +61,10 @@ const DisplayWidget = ({ widget, onSave, handleRemove }) => {
                   fullWidth
                   placeholder="Price"
                   required
-                  error={priceError}
+                  error={error?.price}
                 />
-                {priceError && (
-                  <Typography color="error">
-                    Price must be a number between 1 and 20,000 with 2 decimal
-                    places precision.
-                  </Typography>
+                {error?.price && (
+                  <Typography color="error">{error?.price}</Typography>
                 )}
                 <Input
                   value={description}
@@ -96,12 +72,10 @@ const DisplayWidget = ({ widget, onSave, handleRemove }) => {
                   fullWidth
                   placeholder="Description"
                   required
-                  error={descriptionError}
+                  error={error?.description}
                 />
-                {descriptionError && (
-                  <Typography color="error">
-                    Description must be between 5 and 1000 characters.
-                  </Typography>
+                {error?.description && (
+                  <Typography color="error">{error?.description}</Typography>
                 )}
                 <Button onClick={save} size="small">
                   Save

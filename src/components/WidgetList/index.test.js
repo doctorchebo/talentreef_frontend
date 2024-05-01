@@ -1,25 +1,34 @@
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor } from "@testing-library/react";
+import WidgetList from ".";
+import * as apiConnect from "../../lib/apiConnect";
+import WidgetDisplay from "../WidgetDisplay";
 
-import * as apiConnect from '../../lib/apiConnect'
-import WidgetDisplay from '../WidgetDisplay'
-import WidgetList from './index'
-
-jest.mock('../WidgetDisplay')
-jest.mock('../../lib/apiConnect')
-
-describe('WidgetList', () => {
-  it('renders WidgetDisplay for each widget', async () => {
+jest.mock("../../lib/apiConnect");
+jest.mock("../WidgetDisplay");
+describe("WidgetList", () => {
+  it("Lists all widgets", async () => {
     const widgets = [
-      { description: 'German movie star', name: 'Widget von Hammersmark', price: 19.45 },
-      { description: 'Danish movie star', name: 'Widgette Nielson', price: 19.95 }
-    ]
-    apiConnect.fetchAllWidgets = jest.fn().mockResolvedValue(widgets)
+      { name: "Scarface", description: "Great action movie", price: 20.0 },
+      {
+        name: "There will be blood",
+        description: "Eye-catching thriller",
+        price: 30.0,
+      },
+    ];
 
-    render(<WidgetList />)
+    apiConnect.fetchAllWidgets = jest.fn().mockResolvedValue(widgets);
 
-    await waitFor(() => {
-      expect(WidgetDisplay).toHaveBeenCalledWith(expect.objectContaining({ widget: widgets[0] }), {})
-      expect(WidgetDisplay).toHaveBeenCalledWith(expect.objectContaining({ widget: widgets[1] }), {})
-    })
-  })
-})
+    render(<WidgetList />);
+
+    await waitFor(async () => {
+      expect(WidgetDisplay).toHaveBeenCalledWith(
+        expect.objectContaining({ widget: widgets[0] }),
+        {}
+      );
+      expect(WidgetDisplay).toHaveBeenCalledWith(
+        expect.objectContaining({ widget: widgets[1] }),
+        {}
+      );
+    });
+  });
+});

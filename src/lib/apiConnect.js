@@ -11,7 +11,8 @@ export const addWidget = (widget) =>
     .then((response) => response.data);
 
 export const editWidget = (widget) =>
-  axios.post(`${BASE_URL}/v1/widgets/edit`, widget);
+  axios.post(`${BASE_URL}/v1/widgets/edit`, widget)
+  .then((response) => response.data);
 
 export const deleteWidget = (name) =>
   axios.post(`${BASE_URL}/v1/widgets/delete/${name}`);

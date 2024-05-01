@@ -5,16 +5,12 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import React, { useEffect, useState } from "react";
 
-import {
-  addWidget,
-  deleteWidget,
-  editWidget,
-  fetchAllWidgets,
-} from "../../lib/apiConnect";
+import { addWidget, deleteWidget, fetchAllWidgets } from "../../lib/apiConnect";
 import WidgetDisplay from "../WidgetDisplay";
 
 const WidgetList = () => {
   const [widgets, setWidgets] = useState([]);
+  const [error, setError] = useState();
 
   useEffect(() => {
     fetchAllWidgets()
@@ -31,29 +27,18 @@ const WidgetList = () => {
     setWidgets((widgets) => [newWidget, ...widgets]);
   };
 
-  const onSave = (newWidget, isEdit) => {
-    if (isEdit) {
-      editWidget(newWidget)
-        .then(
-          setWidgets(
-            widgets.map((widget) =>
-              widget.id === newWidget.id ? newWidget : widget
-            )
-          )
-        )
-        .catch((error) =>
-          console.error(
-            `Error editing widget with name ${newWidget.name}`,
-            error
-          )
-        );
-    } else {
-      addWidget(newWidget).catch((error) =>
-        console.error(
-          `Error creating widget with name ${newWidget.name}`,
-          error
-        )
-      );
+  const onSave = async (newWidget) => {
+    try {
+      await addWidget(newWidget);
+      setWidgets((prevWidgets) => [
+        newWidget,
+        ...prevWidgets.filter((w) => w.name !== newWidget.name),
+      ]);
+      setError(null);
+      return true;
+    } catch (error) {
+      setError(error.response?.data);
+      return false;
     }
   };
 
@@ -92,6 +77,7 @@ const WidgetList = () => {
             widget={widget}
             onSave={onSave}
             handleRemove={() => handleRemove(index)}
+            error={error}
           />
         ))}
       </Grid>
